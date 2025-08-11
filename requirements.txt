@@ -1,4 +1,3 @@
 python-telegram-bot==20.3
-transformers
-torch
-huggingface_hub
+pymongo[srv]
+python-dotenv
