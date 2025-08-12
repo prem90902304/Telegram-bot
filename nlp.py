@@ -1,29 +1,36 @@
-import re
+import dateparser
 import datetime
+import re
 
 def parse_nlp_time(text):
     """
-    Extracts time from natural language like 'remind me at 5 pm to call mom'
-    Returns: (datetime_obj, task)
+    Extract reminder time and task from a natural language string.
+    Example input: "remind me tomorrow at 5 pm to call mom"
+    
+    Returns:
+      - datetime object of reminder time (or None)
+      - task string (or None)
     """
-    match = re.search(r"(\d{1,2}):?(\d{2})?\s*(am|pm)?", text.lower())
+    # Try to extract the date/time phrase
+    # Assume the format "remind me <time phrase> to <task>"
+    pattern = r"remind me (.+?) to (.+)"
+    match = re.search(pattern, text, flags=re.IGNORECASE)
     if not match:
         return None, None
+    
+    time_str = match.group(1).strip()
+    task = match.group(2).strip()
 
-    hour = int(match.group(1))
-    minute = int(match.group(2) or 0)
-    am_pm = match.group(3)
-
-    if am_pm == "pm" and hour != 12:
-        hour += 12
-    elif am_pm == "am" and hour == 12:
-        hour = 0
-
-    reminder_time = datetime.datetime.now().replace(
-        hour=hour, minute=minute, second=0, microsecond=0
-    )
-    if reminder_time < datetime.datetime.now():
+    # Parse the time string using dateparser
+    reminder_time = dateparser.parse(time_str, settings={'PREFER_DATES_FROM': 'future'})
+    
+    # If time parsing fails
+    if not reminder_time:
+        return None, None
+    
+    # If reminder time is in the past, push to next day
+    now = datetime.datetime.now()
+    if reminder_time < now:
         reminder_time += datetime.timedelta(days=1)
-
-    task = re.sub(r"remind me.*?(am|pm|\d)", "", text, flags=re.I).strip()
+    
     return reminder_time, task
