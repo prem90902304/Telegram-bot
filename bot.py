@@ -3,7 +3,6 @@ import re
 import datetime
 import asyncio
 import dateparser
-from dotenv import load_dotenv
 from pymongo import MongoClient
 from telegram import Update
 from telegram.ext import (
@@ -14,9 +13,6 @@ from telegram.ext import (
     filters,
 )
 
-# Load environment variables from .env (for local testing)
-load_dotenv()
-
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 MONGO_URI = os.getenv("MONGO_URI")
 
@@ -26,10 +22,6 @@ db = client["mybotdb"]
 reminders_collection = db["reminders"]
 
 def parse_nlp_time(text: str):
-    """
-    Parse natural language reminder like "remind me tomorrow at 5 pm to call mom"
-    Returns tuple (datetime, task) or (None, None) if parsing fails.
-    """
     pattern = r"remind me (.+?) to (.+)"
     match = re.search(pattern, text, flags=re.IGNORECASE)
     if not match:
